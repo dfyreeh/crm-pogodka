@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model City {
+  id        Int    @id @default(autoincrement())
+  nameUa    String
+  nameRu    String
+  nameEn    String
+  region    String
+  countryUa String
+  countryEn String
+  latitude  Float
+  longitude Float
+  slug      String
+
+  @@index([nameUa])
+  @@index([nameRu])
+  @@index([region])
+}
+
+model BotBan {
+  ip        String   @id
+  reason    String
+  createdAt DateTime @default(now())
+}
+
+model BotHit {
+  ip        String @id
+  timestamp Int
+}
+
+model BotCityHit {
+  id        Int    @id @default(autoincrement())
+  ip        String
+  city      String
+  timestamp Int
+}
+
+model SecurityBan {
+  ip         String    @id
+  reason     String
+  isManual   Boolean   @default(false)
+  isLifetime Boolean   @default(false)
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  createdBy  Int?
+}
+
+model SecurityRequestLog {
+  id          Int      @id @default(autoincrement())
+  ip          String
+  fingerprint String
+  path        String
+  method      String
+  userAgent   String
+  city        String?
+  country     String?
+  isBot       Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([ip])
+  @@index([createdAt])
+}
+
+model SecurityDailyStats {
+  date          DateTime @id
+  requests      Int      @default(0)
+  uniqueUsers   Int      @default(0)
+  bots          Int      @default(0)
+  adImpressions Int      @default(0)
+  adClicks      Int      @default(0)
+}
+
+model AdEvent {
+  id        Int      @id @default(autoincrement())
+  ip        String
+  provider  String
+  bannerId  String
+  event     String
+  createdAt DateTime @default(now())
+
+  @@index([provider])
+}
+
+model SecurityAdmin {
+  id          Int       @id @default(autoincrement())
+  email       String    @unique
+  password    String
+  name        String?
+  avatarUrl   String?
+  role        String    @default("admin")
+  createdAt   DateTime  @default(now())
+  lastLoginAt DateTime?
+}
+
+model SecurityAdminActionLog {
+  id        Int      @id @default(autoincrement())
+  adminId   Int
+  action    String
+  target    String?
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+}
+
+model MaintenanceMode {
+  id        Int       @id @default(autoincrement())
+  isActive  Boolean   @default(false)
+  message   String?
+  startedAt DateTime?
+  endsAt    DateTime?
+  createdBy Int?
+}
+
+model SiteAnnouncement {
+  id        Int       @id @default(autoincrement())
+  title     String
+  content   String
+  isActive  Boolean   @default(true)
+  showPopup Boolean   @default(true)
+  startsAt  DateTime  @default(now())
+  endsAt    DateTime?
+  createdAt DateTime  @default(now())
+  createdBy Int?
+}
