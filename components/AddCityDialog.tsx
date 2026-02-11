@@ -103,9 +103,9 @@ export default function AddCityDialog({ onCityAdded }: AddCityDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="cursor-pointer">
+        <Button className="cursor-pointer flex gap-1">
           <Plus />
-          Додати місто
+          Додати 
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">

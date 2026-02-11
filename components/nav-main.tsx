@@ -38,7 +38,10 @@ export function NavMain({
                   tooltip={item.title}
                   style={
                     active
-                      ? { backgroundColor: "var(--primary)", color: "white" }
+                      ? {
+                          backgroundColor: "var(--primary)",
+                          color: "var(--background)",
+                        }
                       : undefined
                   }
                 >
