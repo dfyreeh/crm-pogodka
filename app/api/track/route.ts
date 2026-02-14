@@ -1,31 +1,81 @@
-// route.ts
 import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import { fingerprint as generateFingerprint } from "@/lib/fingerprint";
 
 export async function POST(req: Request) {
   try {
     const url = new URL(req.url);
     const path = url.searchParams.get("p") || "unknown";
 
-    // IP пользователя
+    // Получаем IP пользователя
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0] ||
       req.headers.get("x-real-ip") ||
       "unknown";
 
-    // User-Agent и Referer
+    // User-Agent
     const ua = req.headers.get("user-agent") || "unknown";
-    const ref = req.headers.get("referer") || "direct";
 
-    // Фоновая обработка (антибот, запись в БД и т.д.)
+    // Метод запроса
+    const method = req.method;
+
+    // Генерация безопасного fingerprint
+    const fp = generateFingerprint(ip, ua);
+
+    // Определяем бота по User-Agent
+    const isBot = /bot|crawl|spider|google|bing/i.test(ua);
+
+    // Сегодняшняя дата (для подсчёта статистики)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Фоновая обработка, чтобы не задерживать ответ клиенту
     queueMicrotask(async () => {
-      console.log({ path, ip, ua, ref, time: Date.now() });
-      // TODO: запись в БД
-      // await prisma.visit.create({ data: { path, ip, ua, ref, createdAt: new Date() } });
+      // 1️⃣ Сохраняем каждый запрос в SecurityRequestLog
+      await prisma.securityRequestLog.create({
+        data: {
+          ip,
+          fingerprint: fp,
+          path,
+          method,
+          userAgent: ua,
+          isBot,
+        },
+      });
+
+      // 2️⃣ Проверяем, уникальный ли пользователь за сегодня
+      const alreadyVisited = await prisma.securityRequestLog.findFirst({
+        where: {
+          fingerprint: fp,
+          createdAt: {
+            gte: today, // с начала дня
+          },
+        },
+      });
+
+      const isUniqueToday = !alreadyVisited;
+
+      // 3️⃣ Обновляем ежедневную статистику
+      await prisma.securityDailyStats.upsert({
+        where: { date: today },
+        update: {
+          requests: { increment: 1 },
+          uniqueUsers: { increment: isUniqueToday ? 1 : 0 },
+          bots: { increment: isBot ? 1 : 0 },
+        },
+        create: {
+          date: today,
+          requests: 1,
+          uniqueUsers: 1,
+          bots: isBot ? 1 : 0,
+        },
+      });
     });
 
-    // Мгновенный ответ клиенту
+    // 204 No Content — клиенту не нужно ждать
     return new NextResponse(null, { status: 204 });
-  } catch {
+  } catch (err) {
+    console.error("Error track API:", err);
     return new NextResponse(null, { status: 500 });
   }
 }
