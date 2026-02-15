@@ -25,7 +25,7 @@ export default function RootLayout({
         <Toaster />
         <NextTopLoader
           color="var(--primary)"
-          height={4}
+          height={2}
           showSpinner={false}
           easing="ease"
           speed={200}

@@ -44,39 +44,15 @@ const navItems = [
     roles: ["admin", "editor"],
   },
   {
-    title: "Заблоковані",
-    url: "/dashboard/banned",
-    icon: ShieldX,
-    roles: ["admin"],
-  },
-  {
-    title: "Бот-трафік",
-    url: "/dashboard/bot-hits",
-    icon: Bot,
-    roles: ["admin", "editor"],
-  },
-  {
-    title: "Запити користувачів",
-    url: "/dashboard/request-logs",
-    icon: File,
-    roles: ["admin", "editor"],
-  },
-  {
     title: "Реклама",
     url: "/dashboard/ads",
     icon: BadgeDollarSign,
     roles: ["admin"],
   },
   {
-    title: "Адміни",
+    title: "Адмін",
     url: "/dashboard/admins",
     icon: UserRound,
-    roles: ["admin"],
-  },
-  {
-    title: "Бан",
-    url: "/dashboard/temp-ban",
-    icon: Ban,
     roles: ["admin"],
   },
   {
@@ -84,12 +60,6 @@ const navItems = [
     url: "/dashboard/announcements",
     icon: Bell,
     roles: ["admin", "editor"],
-  },
-  {
-    title: "Технічні роботи",
-    url: "/dashboard/maintenance",
-    icon: Settings,
-    roles: ["admin"],
   },
 ];
 

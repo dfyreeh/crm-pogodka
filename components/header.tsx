@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { SidebarTrigger } from "./ui/sidebar";
 import { Separator } from "@radix-ui/react-separator";
@@ -10,12 +12,26 @@ import {
   BreadcrumbSeparator,
 } from "./ui/breadcrumb";
 import { ModeToggle } from "./ModeToggle";
+import { usePathname } from "next/navigation";
 
 interface Props {
   className?: string;
 }
 
 export const Header: React.FC<Props> = ({ className }) => {
+  const pathname = usePathname();
+
+  const pageTitles: Record<string, string> = {
+    "/dashboard": "Dashboard",
+    "/dashboard/stats": "Статистика",
+    "/dashboard/cities": "Міста",
+    "/dashboard/ads": "Реклама",
+    "/dashboard/admins": "Адміністратор",
+    "/dashboard/announcements": "Оголошення",
+  };
+
+  const currentPage = pageTitles[pathname] || "Dashboard";
+
   return (
     <div className={className}>
       <header className="flex justify-between h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -27,14 +43,8 @@ export const Header: React.FC<Props> = ({ className }) => {
           />
           <Breadcrumb>
             <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">
-                  Building Your Application
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                <BreadcrumbPage>{currentPage}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
