@@ -31,7 +31,17 @@ export async function POST(req: Request) {
 
     // Фоновая обработка, чтобы не задерживать ответ клиенту
     queueMicrotask(async () => {
-      // 1️⃣ Сохраняем каждый запрос в SecurityRequestLog
+      // 1️⃣ Проверяем уникальность по fingerprint за сегодня
+      const alreadyVisitedToday = await prisma.securityRequestLog.findFirst({
+        where: {
+          fingerprint: fp,
+          createdAt: { gte: today },
+        },
+      });
+
+      const isUniqueToday = !alreadyVisitedToday;
+
+      // 2️⃣ Сохраняем текущий запрос в SecurityRequestLog
       await prisma.securityRequestLog.create({
         data: {
           ip,
@@ -43,19 +53,7 @@ export async function POST(req: Request) {
         },
       });
 
-      // 2️⃣ Проверяем, уникальный ли пользователь за сегодня
-      const alreadyVisited = await prisma.securityRequestLog.findFirst({
-        where: {
-          fingerprint: fp,
-          createdAt: {
-            gte: today, // с начала дня
-          },
-        },
-      });
-
-      const isUniqueToday = !alreadyVisited;
-
-      // 3️⃣ Обновляем ежедневную статистику
+      // 3️⃣ Обновляем дневную статистику (одна запись на день)
       await prisma.securityDailyStats.upsert({
         where: { date: today },
         update: {
@@ -66,7 +64,7 @@ export async function POST(req: Request) {
         create: {
           date: today,
           requests: 1,
-          uniqueUsers: 1,
+          uniqueUsers: isUniqueToday ? 1 : 0,
           bots: isBot ? 1 : 0,
         },
       });
